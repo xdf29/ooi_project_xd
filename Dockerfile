@@ -28,17 +28,19 @@ COPY . .
 COPY --from=frontend /app/public/dist ./public/dist
 
 # Copy dist to build directory (Laravel looks for build by default)
-RUN cp -r public/dist public/build || true
-
-# Remove hot file if it exists (forces production asset usage)
-RUN rm -f public/hot || true
+RUN cp -r public/dist public/build && \
+    # Ensure manifest exists in both locations
+    cp public/dist/manifest.json public/build/manifest.json 2>/dev/null || true && \
+    # Remove hot file if it exists (forces production asset usage)
+    rm -f public/hot
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set proper permissions for storage and cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/dist || true && \
-    chmod -R 775 /var/www/storage /var/www/bootstrap/cache /var/www/public/dist || true
+# Set proper permissions for storage, cache, and public directories
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 755 /var/www/public
 
 # Configure Apache
 RUN echo '<VirtualHost *:80>\n\
@@ -46,17 +48,24 @@ RUN echo '<VirtualHost *:80>\n\
     <Directory /var/www/public>\n\
         AllowOverride All\n\
         Require all granted\n\
+        Options -Indexes +FollowSymLinks\n\
+    </Directory>\n\
+    <Directory /var/www/public/dist>\n\
+        Options -Indexes\n\
+        Require all granted\n\
+    </Directory>\n\
+    <Directory /var/www/public/build>\n\
+        Options -Indexes\n\
+        Require all granted\n\
     </Directory>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-# Laravel setup
-RUN php artisan config:clear && \
-    php artisan route:clear && \
-    php artisan view:clear && \
-    php artisan cache:clear
+# Copy startup script
+COPY render-start.sh /usr/local/bin/render-start.sh
+RUN chmod +x /usr/local/bin/render-start.sh
 
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Use startup script that runs optimizations at runtime
+CMD ["/usr/local/bin/render-start.sh"]
