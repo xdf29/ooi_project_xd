@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: ooi-project
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    region: singapore
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: error
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: local
+      # You'll need to set these in Render dashboard:
+      # - APP_KEY (generate with: php artisan key:generate --show)
+      # - APP_URL (your Render service URL)
+      # - DB_* variables if using a database
+

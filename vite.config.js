@@ -13,11 +13,11 @@ export default defineConfig({
                 'resources/scss/about_us.scss',
                 'resources/scss/contact.scss',
             ],
+            buildDirectory: 'dist',  // Tell Laravel plugin the build directory
             refresh: true,
         }),
     ],
 
-    // THIS IS THE ONLY THING THAT WAS MISSING
     build: {
         outDir: resolve(__dirname, 'public/dist'),   // forces output to public/dist
         emptyOutDir: true,

@@ -204,10 +204,10 @@
             };
 
             // Show/hide based on menu active to avoid distraction
-            // const toggleCircle = () => {
-            //     visible = !headerSection.classList.contains('active');
-            //     circle.style.opacity = visible ? '1' : '0';
-            // };
+            const toggleCircle = () => {
+                visible = !headerSection.classList.contains('active');
+                circle.style.opacity = visible ? '1' : '0';
+            };
 
             window.addEventListener('mousemove', updatePos, {
                 passive: true
